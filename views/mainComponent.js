@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ScrollView,
   View,
@@ -19,6 +19,7 @@ const MainComponent = (props) => {
 
   let data = props.data;
   let searchData = props.searchData;
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     props.getData();
@@ -26,6 +27,7 @@ const MainComponent = (props) => {
 
 
   function onSearch(text) {
+    setSearchText(text);
     const filterData = data.filter((item, index) => {
       return item.title.startsWith(text) ? item : null
     });
@@ -36,7 +38,7 @@ const MainComponent = (props) => {
     <View style={styles.maincontainer} >
       <View style={styles.innerontainer}>
         <KeyboardAvoidingView>
-          <TextInput onChange={(e) => onSearch(e.nativeEvent.text)} style={styles.input} placeholder=' Search title ...' />
+          <TextInput onChange={(e) => onSearch(e.nativeEvent.text.toLowerCase())} style={styles.input} placeholder=' Search title ...' />
         </KeyboardAvoidingView>
         {searchData && searchData.length > 0 ?
           (<ScrollView style={styles.scroll} >
@@ -46,17 +48,19 @@ const MainComponent = (props) => {
               )
             })}
           </ScrollView>)
-          : (<FlatList
-            contentContainerStyle={{
-              paddingTop: 10
-            }}
-            ListFooterComponent={<Loader />}
-            data={data}
-            renderItem={({ item }, index) => <ShowDataCompoent index={index} data={item} />}
-            keyExtractor={(item, index) => index}
-            onEndReached={() => props.getData(data.length)}
-            onEndReachedThreshold={0.8}
-          />)}
+          : searchText ?
+            (<NoSearchItemComponent />)
+            : (<FlatList
+              contentContainerStyle={{
+                paddingTop: 10
+              }}
+              ListFooterComponent={<Loader />}
+              data={data}
+              renderItem={({ item }, index) => <ShowDataCompoent index={index} data={item} />}
+              keyExtractor={(item, index) => index}
+              onEndReached={() => props.getData(data.length)}
+              onEndReachedThreshold={0.8}
+            />)}
 
       </View>
     </View>
@@ -91,6 +95,14 @@ const Loader = () => {
   return (
     <View style={styles.loading}>
       <Text>Loading...</Text>
+    </View>
+  )
+}
+
+const NoSearchItemComponent = () => {
+  return (
+    <View style={styles.loading}>
+      <Text>No results found</Text>
     </View>
   )
 }
